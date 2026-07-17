@@ -8,9 +8,19 @@ clinic's own knowledge base, in a warm, professional tone.
 This is a portfolio piece showcasing a clean, embeddable chat widget backed by a
 small, well-structured Python backend.
 
-## Demo Screenshot
+## Screenshots
 
-![Demo screenshot of the Bright Smile Dental chat widget](docs/screenshot.png)
+![Bright Smile Dental landing page and chat widget](docs/screenshot.png)
+
+![Bright Smile Dental landing page and chat widget state 2](docs/Screenshot%202026-07-17%20164631.png)
+
+![Bright Smile Dental landing page and chat widget state 3](docs/Screenshot%202026-07-17%20164957.png)
+
+![Bright Smile Dental landing page and chat widget state 4](docs/Screenshot%202026-07-17%20165310.png)
+
+## Docs
+
+See [docs/README.md](docs/README.md) for the screenshot gallery and a short visual overview of the demo UI.
 
 ## Features
 
