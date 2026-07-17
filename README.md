@@ -8,7 +8,11 @@ clinic's own knowledge base, in a warm, professional tone.
 This is a portfolio piece showcasing a clean, embeddable chat widget backed by a
 small, well-structured Python backend.
 
-![Bright Smile Dental chat widget answering a question about hours and insurance](docs/screenshot.png)
+## Demo Screenshots
+
+| Home Screen | Hours / Availability | Services | Team / Booking |
+| --- | --- | --- | --- |
+| ![Home screen showing the Bright Smile Dental landing page and chat widget](docs/screenshot-1.png) | ![Chatbot answering a question about Sunday hours](docs/screenshot-2.png) | ![Chatbot listing available dental services](docs/screenshot-3.png) | ![Chatbot describing staff and booking information](docs/screenshot-4.png) |
 
 ## Features
 
