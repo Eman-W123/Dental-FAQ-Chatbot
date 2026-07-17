@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Bright Smile Dental</title>
+    <style>
+      :root {
+        --accent: #0ea5a4;          /* calming teal */
+        --accent-dark: #0b7f7e;
+        --accent-soft: #e6f6f6;
+        --bg: #f7fafb;
+        --text: #12333a;
+        --muted: #5b7178;
+        --bot-bubble: #eef4f6;
+        --user-bubble: var(--accent);
+        --border: rgba(18, 51, 58, 0.1);
+        --shadow: 0 18px 48px rgba(11, 76, 78, 0.22);
+        --font: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica,
+          Arial, sans-serif;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        min-height: 100vh;
+        font-family: var(--font);
+        color: var(--text);
+        background:
+          radial-gradient(circle at 15% 15%, rgba(14, 165, 164, 0.12), transparent 40%),
+          radial-gradient(circle at 85% 0%, rgba(14, 165, 164, 0.08), transparent 35%),
+          var(--bg);
+      }
+
+      /* --- Demo landing content (so the page isn't blank behind the widget) --- */
+      .page {
+        max-width: 720px;
+        margin: 0 auto;
+        padding: 80px 24px 140px;
+      }
+      .page .badge {
+        display: inline-block;
+        padding: 6px 14px;
+        border-radius: 999px;
+        background: var(--accent-soft);
+        color: var(--accent-dark);
+        font-size: 0.8rem;
+        font-weight: 700;
+        letter-spacing: 0.04em;
+        text-transform: uppercase;
+      }
+      .page h1 {
+        margin: 20px 0 12px;
+        font-size: clamp(2rem, 5vw, 3rem);
+        line-height: 1.1;
+        letter-spacing: -0.02em;
+      }
+      .page p {
+        color: var(--muted);
+        font-size: 1.1rem;
+        line-height: 1.6;
+        max-width: 52ch;
+      }
+      .page .hint {
+        margin-top: 28px;
+        font-size: 0.95rem;
+        color: var(--accent-dark);
+        font-weight: 600;
+      }
+
+      /* --- Chat launcher bubble --- */
+      .chat-launcher {
+        position: fixed;
+        right: 24px;
+        bottom: 24px;
+        width: 62px;
+        height: 62px;
+        border: none;
+        border-radius: 50%;
+        background: var(--accent);
+        color: #fff;
+        cursor: pointer;
+        box-shadow: var(--shadow);
+        display: grid;
+        place-items: center;
+        z-index: 1000;
+        transition: transform 0.2s ease, background 0.2s ease;
+      }
+      .chat-launcher:hover {
+        background: var(--accent-dark);
+        transform: translateY(-2px);
+      }
+      .chat-launcher svg {
+        width: 28px;
+        height: 28px;
+      }
+      .chat-launcher .icon-close {
+        display: none;
+      }
+      body.chat-open .chat-launcher .icon-open {
+        display: none;
+      }
+      body.chat-open .chat-launcher .icon-close {
+        display: block;
+      }
+
+      /* --- Chat window --- */
+      .chat-window {
+        position: fixed;
+        right: 24px;
+        bottom: 100px;
+        width: 380px;
+        max-width: calc(100vw - 32px);
+        height: 560px;
+        max-height: calc(100vh - 130px);
+        background: #fff;
+        border-radius: 18px;
+        box-shadow: var(--shadow);
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+        z-index: 1000;
+
+        /* closed state */
+        opacity: 0;
+        transform: translateY(16px) scale(0.96);
+        transform-origin: bottom right;
+        pointer-events: none;
+        transition: opacity 0.22s ease, transform 0.22s ease;
+      }
+      body.chat-open .chat-window {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+        pointer-events: auto;
+      }
+
+      .chat-header {
+        background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+        color: #fff;
+        padding: 18px 20px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+      }
+      .chat-header .avatar {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: rgba(255, 255, 255, 0.18);
+        display: grid;
+        place-items: center;
+        font-size: 1.2rem;
+        flex-shrink: 0;
+      }
+      .chat-header .title {
+        font-weight: 700;
+        font-size: 1.02rem;
+        line-height: 1.2;
+      }
+      .chat-header .subtitle {
+        font-size: 0.8rem;
+        opacity: 0.9;
+        display: flex;
+        align-items: center;
+        gap: 6px;
+        margin-top: 2px;
+      }
+      .chat-header .dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: #6ee7b7;
+        box-shadow: 0 0 0 3px rgba(110, 231, 183, 0.25);
+      }
+
+      .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        background: var(--bg);
+      }
+
+      .msg {
+        max-width: 82%;
+        padding: 11px 14px;
+        border-radius: 16px;
+        font-size: 0.94rem;
+        line-height: 1.45;
+        word-wrap: break-word;
+        animation: pop 0.18s ease-out;
+      }
+      .msg.bot {
+        align-self: flex-start;
+        background: var(--bot-bubble);
+        color: var(--text);
+        border-bottom-left-radius: 5px;
+      }
+      .msg.user {
+        align-self: flex-end;
+        background: var(--user-bubble);
+        color: #fff;
+        border-bottom-right-radius: 5px;
+        white-space: pre-wrap;
+      }
+
+      /* Markdown rendered inside bot bubbles */
+      .msg.bot p {
+        margin: 0 0 8px;
+      }
+      .msg.bot p:last-child {
+        margin-bottom: 0;
+      }
+      .msg.bot ul,
+      .msg.bot ol {
+        margin: 4px 0 8px;
+        padding-left: 20px;
+      }
+      .msg.bot ul:last-child,
+      .msg.bot ol:last-child {
+        margin-bottom: 0;
+      }
+      .msg.bot li {
+        margin-bottom: 4px;
+      }
+      .msg.bot li:last-child {
+        margin-bottom: 0;
+      }
+      .msg.bot strong {
+        font-weight: 700;
+      }
+      .msg.bot em {
+        font-style: italic;
+      }
+      .msg.bot code {
+        background: rgba(18, 51, 58, 0.08);
+        padding: 1px 5px;
+        border-radius: 4px;
+        font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+        font-size: 0.88em;
+      }
+      .msg.bot a {
+        color: var(--accent-dark);
+        font-weight: 600;
+      }
+
+      @keyframes pop {
+        from {
+          opacity: 0;
+          transform: translateY(6px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      /* Typing indicator */
+      .typing {
+        align-self: flex-start;
+        background: var(--bot-bubble);
+        border-radius: 16px;
+        border-bottom-left-radius: 5px;
+        padding: 14px 16px;
+        display: flex;
+        gap: 5px;
+      }
+      .typing span {
+        width: 7px;
+        height: 7px;
+        border-radius: 50%;
+        background: var(--muted);
+        opacity: 0.5;
+        animation: blink 1.2s infinite ease-in-out;
+      }
+      .typing span:nth-child(2) {
+        animation-delay: 0.2s;
+      }
+      .typing span:nth-child(3) {
+        animation-delay: 0.4s;
+      }
+      @keyframes blink {
+        0%, 80%, 100% {
+          transform: translateY(0);
+          opacity: 0.4;
+        }
+        40% {
+          transform: translateY(-4px);
+          opacity: 1;
+        }
+      }
+
+      /* Composer */
+      .chat-form {
+        display: flex;
+        gap: 8px;
+        padding: 12px;
+        border-top: 1px solid var(--border);
+        background: #fff;
+      }
+      .chat-form input {
+        flex: 1;
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 12px 14px;
+        font: inherit;
+        font-size: 0.94rem;
+        color: var(--text);
+        outline: none;
+        transition: border-color 0.15s ease;
+      }
+      .chat-form input:focus {
+        border-color: var(--accent);
+      }
+      .chat-form button {
+        border: none;
+        border-radius: 12px;
+        width: 46px;
+        background: var(--accent);
+        color: #fff;
+        cursor: pointer;
+        display: grid;
+        place-items: center;
+        transition: background 0.15s ease;
+        flex-shrink: 0;
+      }
+      .chat-form button:hover:not(:disabled) {
+        background: var(--accent-dark);
+      }
+      .chat-form button:disabled {
+        opacity: 0.5;
+        cursor: default;
+      }
+      .chat-form button svg {
+        width: 20px;
+        height: 20px;
+      }
+
+      @media (max-width: 480px) {
+        .chat-window {
+          right: 12px;
+          left: 12px;
+          bottom: 88px;
+          width: auto;
+          height: calc(100vh - 108px);
+        }
+        .chat-launcher {
+          right: 16px;
+          bottom: 16px;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main class="page">
+      <span class="badge">Bright Smile Dental</span>
+      <h1>Gentle, modern dentistry for the whole family.</h1>
+      <p>
+        Cleanings, whitening, braces, and emergency care in the Riverside
+        neighborhood. Have a question about our services, hours, or booking an
+        appointment?
+      </p>
+      <p class="hint">Tap the chat bubble in the corner to ask our assistant &rarr;</p>
+    </main>
+
+    <!-- Chat window -->
+    <section class="chat-window" id="chatWindow" aria-live="polite" aria-label="Chat with Bright Smile Dental">
+      <header class="chat-header">
+        <div class="avatar">🦷</div>
+        <div>
+          <div class="title">Bright Smile Dental</div>
+          <div class="subtitle"><span class="dot"></span> Front desk assistant</div>
+        </div>
+      </header>
+      <div class="chat-messages" id="messages"></div>
+      <form class="chat-form" id="chatForm" autocomplete="off">
+        <input
+          id="input"
+          type="text"
+          placeholder="Ask about hours, services, booking…"
+          aria-label="Type your message"
+          required
+        />
+        <button type="submit" id="sendBtn" aria-label="Send message">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="22" y1="2" x2="11" y2="13" />
+            <polygon points="22 2 15 22 11 13 2 9 22 2" />
+          </svg>
+        </button>
+      </form>
+    </section>
+
+    <!-- Launcher bubble -->
+    <button class="chat-launcher" id="launcher" aria-label="Open chat">
+      <svg class="icon-open" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" />
+      </svg>
+      <svg class="icon-close" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18" />
+        <line x1="6" y1="6" x2="18" y2="18" />
+      </svg>
+    </button>
+
+    <script>
+      const launcher = document.getElementById("launcher");
+      const chatWindow = document.getElementById("chatWindow");
+      const messagesEl = document.getElementById("messages");
+      const form = document.getElementById("chatForm");
+      const input = document.getElementById("input");
+      const sendBtn = document.getElementById("sendBtn");
+
+      const WELCOME =
+        "Hi! I'm Bright Smile Dental's assistant. Ask me about our services, hours, or booking an appointment.";
+
+      let greeted = false;
+
+      function scrollToBottom() {
+        messagesEl.scrollTop = messagesEl.scrollHeight;
+      }
+
+      // --- Minimal, dependency-free markdown renderer for bot replies ---
+      // HTML-escapes the raw text first, then only reintroduces tags this
+      // function generates itself (bold, italic, code, links, lists,
+      // paragraphs) — never trusts the source text as HTML.
+      function escapeHtml(str) {
+        return str
+          .replace(/&/g, "&amp;")
+          .replace(/</g, "&lt;")
+          .replace(/>/g, "&gt;")
+          .replace(/"/g, "&quot;")
+          .replace(/'/g, "&#39;");
+      }
+
+      function renderInline(text) {
+        // Links: [label](url)
+        text = text.replace(
+          /\[([^\]]+)\]\((https?:\/\/[^\s)]+)\)/g,
+          '<a href="$2" target="_blank" rel="noopener noreferrer">$1</a>'
+        );
+        // Bold: **text** or __text__
+        text = text.replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+        text = text.replace(/__(.+?)__/g, "<strong>$1</strong>");
+        // Italic: *text* or _text_
+        text = text.replace(/\*(.+?)\*/g, "<em>$1</em>");
+        text = text.replace(/(^|\W)_(.+?)_(?=\W|$)/g, "$1<em>$2</em>");
+        // Inline code: `code`
+        text = text.replace(/`([^`]+?)`/g, "<code>$1</code>");
+        return text;
+      }
+
+      function renderMarkdown(raw) {
+        const lines = escapeHtml(raw).split("\n");
+        let html = "";
+        let listType = null; // "ul" | "ol" | null
+        let paragraph = [];
+
+        function flushParagraph() {
+          if (paragraph.length) {
+            html += "<p>" + paragraph.map(renderInline).join("<br>") + "</p>";
+            paragraph = [];
+          }
+        }
+        function closeList() {
+          if (listType) {
+            html += "</" + listType + ">";
+            listType = null;
+          }
+        }
+
+        for (const line of lines) {
+          const bullet = line.match(/^\s*[-*+]\s+(.*)$/);
+          const numbered = line.match(/^\s*\d+[.)]\s+(.*)$/);
+
+          if (bullet) {
+            flushParagraph();
+            if (listType !== "ul") {
+              closeList();
+              html += "<ul>";
+              listType = "ul";
+            }
+            html += "<li>" + renderInline(bullet[1]) + "</li>";
+          } else if (numbered) {
+            flushParagraph();
+            if (listType !== "ol") {
+              closeList();
+              html += "<ol>";
+              listType = "ol";
+            }
+            html += "<li>" + renderInline(numbered[1]) + "</li>";
+          } else if (line.trim() === "") {
+            closeList();
+            flushParagraph();
+          } else {
+            closeList();
+            paragraph.push(line);
+          }
+        }
+        closeList();
+        flushParagraph();
+        return html;
+      }
+
+      function addMessage(text, role) {
+        const el = document.createElement("div");
+        el.className = "msg " + role;
+        if (role === "bot") {
+          // Bot text goes through the markdown renderer (HTML-escaped internally).
+          el.innerHTML = renderMarkdown(text);
+        } else {
+          // User text is never interpreted as markdown/HTML.
+          el.textContent = text;
+        }
+        messagesEl.appendChild(el);
+        scrollToBottom();
+        return el;
+      }
+
+      function showTyping() {
+        const el = document.createElement("div");
+        el.className = "typing";
+        el.innerHTML = "<span></span><span></span><span></span>";
+        messagesEl.appendChild(el);
+        scrollToBottom();
+        return el;
+      }
+
+      function openChat() {
+        document.body.classList.add("chat-open");
+        launcher.setAttribute("aria-label", "Close chat");
+        if (!greeted) {
+          greeted = true;
+          // Small delay so the welcome message animates in after the window opens.
+          setTimeout(() => addMessage(WELCOME, "bot"), 250);
+        }
+        setTimeout(() => input.focus(), 300);
+      }
+
+      function closeChat() {
+        document.body.classList.remove("chat-open");
+        launcher.setAttribute("aria-label", "Open chat");
+      }
+
+      launcher.addEventListener("click", () => {
+        if (document.body.classList.contains("chat-open")) {
+          closeChat();
+        } else {
+          openChat();
+        }
+      });
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const text = input.value.trim();
+        if (!text) return;
+
+        addMessage(text, "user");
+        input.value = "";
+        input.disabled = true;
+        sendBtn.disabled = true;
+
+        const typing = showTyping();
+
+        try {
+          const res = await fetch("/chat", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: text }),
+          });
+          const data = await res.json();
+          typing.remove();
+          addMessage(
+            data.reply || data.error || "Sorry, something went wrong.",
+            "bot"
+          );
+        } catch (err) {
+          typing.remove();
+          addMessage(
+            "I couldn't reach the clinic assistant just now. Please try again in a moment.",
+            "bot"
+          );
+        } finally {
+          input.disabled = false;
+          sendBtn.disabled = false;
+          input.focus();
+        }
+      });
+    </script>
+  </body>
+</html>
