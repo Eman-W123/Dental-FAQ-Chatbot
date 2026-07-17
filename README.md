@@ -8,8 +8,7 @@ clinic's own knowledge base, in a warm, professional tone.
 This is a portfolio piece showcasing a clean, embeddable chat widget backed by a
 small, well-structured Python backend.
 
-![Chat widget: a teal bubble in the bottom-right corner that expands into a
-conversation window.](https://placehold.co/600x40/0ea5a4/ffffff?text=Bright+Smile+Dental+Assistant)
+![Bright Smile Dental chat widget answering a question about hours and insurance](docs/screenshot.png)
 
 ## Features
 
